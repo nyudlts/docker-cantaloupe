@@ -1,43 +1,20 @@
-FROM openjdk:10-slim
+FROM redhat-openjdk-18/openjdk18-openshift:latest
 
 ENV CANTALOUPE_VERSION=4.0.3
-#ENV IMAGEMAGICK_VERSION=7.0.8-14
 
 EXPOSE 8182
 
 VOLUME /imageroot
 
+USER root
+
 # Update packages and install tools
-RUN apt-get update -y && \
-    apt-get install -y --no-install-recommends wget unzip graphicsmagick curl imagemagick libopenjp2-tools ffmpeg python && \
-    rm -rf /var/lib/apt/lists/*
+RUN yum install -y wget unzip curl python
 
 # Run non privileged
 RUN adduser --system cantaloupe
 
 WORKDIR /tmp
-
-# KAKADU Install
-RUN mkdir -p /tools && \
-    cd /tools && \
-    wget -O kakadu.zip http://kakadusoftware.com/wp-content/uploads/2014/06/KDU7A2_Demo_Apps_for_Ubuntu-x86-64_170827.zip && \
-    unzip kakadu.zip -d kakadu && \
-    rm -f kakadu.zip
-
-ENV PATH /tools/kakadu/KDU7A2_Demo_Apps_for_Ubuntu-x86-64_170827:${PATH}
-ENV LD_LIBRARY_PATH /tools/kakadu/KDU7A2_Demo_Apps_for_Ubuntu-x86-64_170827:${LD_LIBRARY_PATH}
-
-#ImageMagick 7 install - re-evaluate once officially deprecated
-#RUN cd /tools && \
-#    wget http://imagemagick.org/download/releases/ImageMagick-$IMAGEMAGICK_VERSION.tar.xz && \
-#    tar -xf ImageMagick-$IMAGEMAGICK_VERSION.tar.xz && \
-#    cd ImageMagick-$IMAGEMAGICK_VERSION && \
-#    ./configure --prefix /usr/local && \
-#    make && \
-#    make install && \
-#    cd .. && \
-#    ldconfig /usr/local/lib && \
-#    rm -rf  ImageMagick*
 
 # Get and unpack Cantaloupe release archive
 RUN curl -OL https://github.com/medusa-project/cantaloupe/releases/download/v$CANTALOUPE_VERSION/Cantaloupe-$CANTALOUPE_VERSION.zip \
